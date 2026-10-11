@@ -14,6 +14,8 @@ to launch the app, hold the TUNE knob. other launch methods will be available so
 > [!TIP]
 > What you'll need: a laptop, a USB drive, a method to [reboot the headunit](https://www.facebook.com/groups/theioniqguy/posts/1355171539173388/), and a stable Wi-Fi connection (in my testing, an iPhone hotspot is too modern for the car to connect to. you may have success with older devices or Android phones)
 
+right now, this process is fairly involved. eventually i'd like to make a single script that does this for you.
+
 1. [Install NEMESIS](https://github.com/xwtk/hmg_nemesis/blob/main/03-Install-and-Uninstall.md). **(note: you do not need to build ota_package.tar yourself, you can find a downloadable file in the repo)**
 
 2. **Enable ADB and Wi-Fi on the car.**
