@@ -216,7 +216,3 @@ right now, this process is fairly involved. eventually i'd like to make a single
    **Waiting does not mean the battery heater is active.** Launchpad shows **Active** only when the car reports conditioning active.
 
    Press **Stop** to cancel, including while activation is pending. Closing Launchpad does not stop an ongoing request.
-
-   V1 checks the head unit’s firmware and required Hyundai services. If preconditioning is unavailable or its status is unknown, do not bypass that check. NEMESIS compatibility alone does not establish preconditioning compatibility.
-
-   V1 does not coordinate manual requests with Hyundai navigation, so test it without native navigation requesting battery conditioning.
