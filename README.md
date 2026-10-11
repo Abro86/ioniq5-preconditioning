@@ -6,6 +6,8 @@ once you get the app onto your IONIQ (instructions below), it's pretty simple to
 
 to launch the app, hold the TUNE knob. other launch methods will be available soon. simply press the start preconditioning button, wait roughly 60sec (hardware limitation, nothing i can do about that unfortunately), and preconditioning will start!
 
+this app was originally designed to be essentially a replacement for the stock headunit launcher, but it turned out to be kinda useless outside of the preconditioning and wifi settings.
+
 ## installation instructions
 
 > [!WARNING]
