@@ -13,6 +13,8 @@ this app was originally designed to be essentially a replacement for the stock h
 > [!WARNING]
 > This process involves making **unauthorized modifications to the infotainment system of your car.** One wrong move can render it **entirely unusable, leaving you with a very costly repair bill**. Take care to **never delete or modify any files in the car.** If you are unsure about **anything in this document**, don't leave it up to chance! Feel free to DM me on [Twitter](https://x.com/paytondev) or [Reddit](https://reddit.com/u/paytondev) and I'll try to help.
 
+if you aren't comfortable modifying the infotainment system of your car, a [hardware mod](https://electroniqbuttons.com/products/ioniq-5-6-ev6-gv60-manual-preconditioning-button-beta-pre-order) exists that replicates this functionality in an easily reversible and safer manner.
+
 > [!TIP]
 > What you'll need: a laptop, a USB drive, a method to [reboot the headunit](https://www.facebook.com/groups/theioniqguy/posts/1355171539173388/), and a stable Wi-Fi connection (in my testing, an iPhone hotspot is too modern for the car to connect to. you may have success with older devices or Android phones)
 
@@ -218,3 +220,8 @@ right now, this process is fairly involved. eventually i'd like to make a single
    **Waiting does not mean the battery heater is active.** Launchpad shows **Active** only when the car reports conditioning active.
 
    Press **Stop** to cancel, including while activation is pending. Closing Launchpad does not stop an ongoing request.
+
+## credits
+- [https://github.com/xwtk/hmg_nemesis](https://github.com/xwtk/hmg_nemesis) - the NEMESIS exploit that made this all possible
+- [https://github.com/tylerharvey/Ioniq5_CAN](https://github.com/tylerharvey/Ioniq5_CAN) - reverse engineered the CAN messages used to start preconditioning
+- [https://github.com/Helloyunho/gen5w-utils](https://github.com/Helloyunho/gen5w-utils) - other scripts and tools for reverse engineering Gen5W
