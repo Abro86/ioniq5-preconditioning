@@ -1,7 +1,7 @@
 [nemesis]
-version=1.0.0
+version=1.2.0
 id=paytondev.launchpad
-name=Launchpad (hold TUNE)
+name=Launchpad
 types=application,service
 postinstall=scripts/postinstall.sh
 preuninstall=scripts/preuninstall.sh

@@ -57,35 +57,63 @@ The script runs tests/lint, builds, removes prior ZIP signature metadata, signs
 with the existing v1 SHA1/RSA procedure, aligns the APK, and verifies the
 signature for API 19. The final artifact is `dist/Launchpad.apk`.
 
-## TUNE service USB bundle
+## NEMESIS package and USB install/update/uninstall bundles
 
 ```sh
-python3 tools/build_tune_bundle.py
+python3 tools/build_usb_bundles.py            # uses dist/Launchpad.apk
+python3 tools/build_usb_bundles.py --apk path/to/signed.apk
 ```
 
-This builds the release APK as a **dex container** for the root `app_process`
-listener. NEMESIS does not install that container through PackageManager, so it
-does not require the app's release signing key. The same source compilation
-contains `KnobDaemon`, `Evdev`, and `HoldDetector`; only `KnobDaemon` is invoked
-by the service.
+The builder requires a **signed** APK (by default the `dist/Launchpad.apk` from
+`tools/build_apk.sh`), because the package installs it at
+`/system/app/Launchpad.apk`. The same APK is also the **dex container** for the
+root `app_process` TUNE listener (`KnobDaemon`, `Evdev`, `HoldDetector`), so the
+visible app and the daemon always come from one build.
 
-Outputs:
+Outputs in `dist/`:
 
-- `dist/tune-knob-usb.zip`: outer USB bundle; extract this onto the USB drive.
-- `dist/paytondev.launchpad.zip`: inner NEMESIS service package.
+- `paytondev.launchpad.zip`: the NEMESIS package (`tune-service/` plus
+  `app/Launchpad.apk`).
+- `Launchpad-install-usb.zip`, `Launchpad-update-usb.zip`,
+  `Launchpad-uninstall-usb.zip`: USB drive roots. Each has a `type=execute`
+  `NEMESIS.data` that runs `launchpad/<action>.sh` (from `usb/launchpad/`, with
+  a copy of `tune-service/scripts/common.sh`). Install and update also carry
+  `packages/paytondev.launchpad.zip`.
 
-The outer bundle contains `NEMESIS.data` and
-`packages/paytondev.launchpad.zip`. Its service uses the package id
-`paytondev.launchpad` and registry name `paytondev.launchpad/knobd`, opens
-`com.paytondev.launchpad/.MainActivity`, and passes the existing `from_knob`
-intent extra. It listens passively, without grabbing the input device or
-injecting events. Its profile expects device name
+`tools/usb/write-usb.sh` / `write-usb.ps1` write a bundle onto a drive. They
+move any previous NEMESIS files on it into a backup folder rather than deleting
+them.
+
+How it works on the car:
+
+- **install**: `nemesis install`. The package's `postinstall` stages and
+  verifies the APK in `/data/local/tmp/launchpad`, then writes
+  `/system/app/Launchpad.apk`. It checks free space first, compares the result
+  byte for byte, and restores the previous APK if that check fails.
+- **update**: `nemesis install --update`. NEMESIS runs the old package's
+  `preuninstall`, which sees the new package in NEMESIS's stage directory and
+  leaves the APK in place. The new `postinstall` then rewrites it in place, so
+  app data survives. The `type=install` USB descriptor can't do this, because
+  with Android up NEMESIS answers "uninstall first".
+- **uninstall**: `nemesis uninstall`. `preuninstall` force-stops the app and
+  removes `/system/app/Launchpad.apk`. The USB script also removes an APK left
+  by a manual install.
+
+Rule for these scripts: the only file under `/system` they may write or remove
+is `/system/app/Launchpad.apk`. `/system` is remounted rw (`nemesis remount`)
+only around that write, and only when the file actually changes. Car-side
+scripts are toolbox-only `#!/system/bin/sh` (KitKat mksh: no `grep`, `awk`,
+`cp` or busybox).
+
+The service uses package id `paytondev.launchpad` and registry name
+`paytondev.launchpad/knobd`. It opens `com.paytondev.launchpad/.MainActivity`
+and passes the existing `from_knob` intent extra. It listens passively, without
+grabbing the input device or injecting events. Its profile expects device name
 `daudio_wp_daudioplus_neev23_us`, key code 17, and an 800 ms hold.
 
-Publish `dist/Launchpad.apk` and `dist/tune-knob-usb.zip` as separate GitHub
-release assets. Do not substitute the visible app for the installed daemon's
-dex container when updating an existing car. These scripts generate local
-artifacts only; vehicle installation remains a separate manual step.
+Publish the three `Launchpad-*-usb.zip` files, `paytondev.launchpad.zip` (for
+manual ADB installs) and `dist/Launchpad.apk` as GitHub release assets. These
+scripts generate local artifacts only and never connect to a car.
 
 See [COMPATIBILITY.md](COMPATIBILITY.md) for firmware and verification limits.
 Icons retain the bundled [Phosphor license](app/src/main/assets/phosphor-LICENSE.txt).
