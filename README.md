@@ -1,28 +1,148 @@
 # ioniq5-preconditioning
 an app that gives you a manual preconditioning button in your IONIQ 5.
 
-## how to use it
-once you get the app onto your IONIQ (instructions below), it's pretty simple to use.
+hold the TUNE knob, press **Start**, and Launchpad asks the car to start conditioning the battery. no navigation destination needed.
 
-to launch the app, hold the TUNE knob. other launch methods will be available soon. simply press the start preconditioning button, wait roughly 60sec (hardware limitation, nothing i can do about that unfortunately), and preconditioning will start!
+this app was originally designed to be essentially a replacement for the stock headunit launcher, but it turned out to be kinda useless outside of the preconditioning and wifi settings. those parts are still there if you want them.
 
-this app was originally designed to be essentially a replacement for the stock headunit launcher, but it turned out to be kinda useless outside of the preconditioning and wifi settings.
-
-## installation instructions
+## before you start
 
 > [!WARNING]
 > This process involves making **unauthorized modifications to the infotainment system of your car.** One wrong move can render it **entirely unusable, leaving you with a very costly repair bill**. Take care to **never delete or modify any files in the car.** If you are unsure about **anything in this document**, don't leave it up to chance! Feel free to DM me on [Twitter](https://x.com/paytondev) or [Reddit](https://reddit.com/u/paytondev) and I'll try to help.
 
 if you aren't comfortable modifying the infotainment system of your car, a [hardware mod](https://electroniqbuttons.com/products/ioniq-5-6-ev6-gv60-manual-preconditioning-button-beta-pre-order) exists that replicates this functionality in an easily reversible and safer manner.
 
-> [!TIP]
-> What you'll need: a laptop, a USB drive, a method to [reboot the headunit](https://www.facebook.com/groups/theioniqguy/posts/1355171539173388/), and a stable Wi-Fi connection (in my testing, an iPhone hotspot is too modern for the car to connect to. you may have success with older devices or Android phones)
+**compatibility:** so far this has only been checked on an **IONIQ 5 with the NEEV23 US head unit** (`wp_daudioplus_neev23_us`). Launchpad checks the car's firmware before it enables **Start**. On anything else, preconditioning stays **Unavailable** and the TUNE hold may not work. That's on purpose, so it never sends commands to firmware it doesn't understand. Details are in [COMPATIBILITY.md](COMPATIBILITY.md).
 
-right now, this process is fairly involved. eventually i'd like to make a single script that does this for you.
+**what you'll need:**
+- a computer (Mac, Windows or Linux)
+- a USB drive formatted **FAT32 or exFAT**. a small, empty one is easiest.
+- a way to [reboot the headunit](https://www.facebook.com/groups/theioniqguy/posts/1355171539173388/) (the pinhole button in the climate control bar)
+- about 15 minutes, parked
 
-1. [Install NEMESIS](https://github.com/xwtk/hmg_nemesis/blob/main/03-Install-and-Uninstall.md). **(note: you do not need to build ota_package.tar yourself, you can find a downloadable file in the repo)**
+you **don't** need ADB, Wi-Fi, or a terminal.
 
-2. **Enable ADB and Wi-Fi on the car.**
+## installation
+
+### 1. install NEMESIS
+
+[NEMESIS](https://github.com/xwtk/hmg_nemesis) is what lets us install things on the headunit. you only do this once. follow the **Quick Installation Guidance** in [its README](https://github.com/xwtk/hmg_nemesis#quick-installation-guidance). In short:
+
+1. download [`ota_package.tar`](https://github.com/xwtk/hmg_nemesis/blob/main/ota_package.tar) (you don't need to build it yourself) and copy it to the root of the USB drive. don't extract it.
+2. plug the drive into the car. "No Supported Files" is expected.
+3. open Engineering Mode → **USB Copy** → **Update DSP** → **Update OTA**.
+4. wait for it to install and restart the headunit. an **Error 684** afterwards is expected. **651** means the file didn't extract; check the drive and try again.
+
+to check that it worked: press the **NAV** button three times quickly and **NEMESIS Manager** should open.
+
+once that's done, delete `ota_package.tar` from the drive (or use a different drive).
+
+### 2. put the Launchpad installer on the drive
+
+download **`Launchpad-install-usb.zip`** from the [latest release](../../releases/latest).
+
+extract it so its **contents** sit at the **root** of the drive, with nothing else from NEMESIS left on it. the drive should look exactly like this:
+
+```text
+USB drive/
+├── NEMESIS.data
+├── launchpad/
+│   ├── common.sh
+│   ├── install.sh
+│   └── lib.sh
+└── packages/
+    └── paytondev.launchpad.zip
+```
+
+- **Mac:** double-clicking the zip makes a `Launchpad-install-usb` folder (Safari may already have done this for you). open that folder and copy everything **inside** it to the drive, not the folder itself.
+- **Windows:** right-click the zip → **Extract All…**, and change the destination to the drive itself (e.g. `E:\`). by default Windows adds a subfolder, which won't work.
+- don't unzip `packages/paytondev.launchpad.zip`. NEMESIS needs it as a zip.
+- if an old `NEMESIS.data` or `NEMESIS.sh` is on the drive, move it off first. the car only looks at the one `NEMESIS.data` in the root.
+
+<details>
+<summary>or use the helper script (if you've cloned this repo)</summary>
+
+it does the same thing, and moves anything NEMESIS-related already on the drive into a `NEMESIS-backup-<date>` folder instead of overwriting it.
+
+```sh
+sh tools/usb/write-usb.sh install /Volumes/YOUR_USB ~/Downloads
+```
+
+on Windows PowerShell:
+```powershell
+.\tools\usb\write-usb.ps1 install E:\ $HOME\Downloads
+```
+
+the last argument is the folder you downloaded the zip to.
+</details>
+
+### 3. run it in the car
+
+1. park, turn the car on, and wait for the headunit to finish starting.
+2. plug the drive into a USB **data** port (the one you'd use for music or CarPlay, not a charge-only port).
+3. NEMESIS asks whether to run the item on the USB drive. tap **Yes**. you have 60 seconds. if you miss it, unplug the drive and plug it back in.
+4. wait for the result dialog. it usually takes a few seconds and can take up to about 20.
+
+the installer writes **`launchpad-install.log`** to the drive. if the dialog says it failed, that file says why. please include it if you ask me for help.
+
+### 4. reboot and open it
+
+reboot the headunit with the pinhole button and remove the drive. once it's back up, **hold the TUNE knob for about a second** and Launchpad should open.
+
+you only need the USB drive again to update or uninstall.
+
+## using it
+
+1. hold TUNE to open Launchpad and go to preconditioning.
+2. press **Start**. Launchpad shows **Waiting for BMS** at first. activation usually takes **60–120 seconds**. that's a limitation of the car, nothing i can do about that unfortunately.
+3. the battery management system can still say no, because of temperature, charge, or other conditions it controls.
+
+**waiting does not mean the battery heater is on.** Launchpad shows **Active** only when the car itself reports that conditioning is active.
+
+press **Stop** to cancel, including while it's still waiting. closing Launchpad does **not** stop a request that's already running.
+
+## updating
+
+same as installing, but with **`Launchpad-update-usb.zip`** from the newest release (helper: `write-usb.sh update ...`). the log is `launchpad-update.log`. reboot afterwards.
+
+your favorites and settings are kept. the update replaces the app in place instead of removing it first. it also works if you installed an older version with the old manual (ADB) instructions, or if nothing is installed yet.
+
+> [!NOTE]
+> if you plug in the **install** drive when Launchpad is already installed, it stops and tells you to use the update drive. running a drive twice is harmless.
+
+## uninstalling
+
+1. if preconditioning is running, press **Stop** and wait for it to end.
+2. same steps as installing, but with **`Launchpad-uninstall-usb.zip`** (helper: `write-usb.sh uninstall ...`). the log is `launchpad-uninstall.log`.
+3. reboot the headunit.
+
+this removes Launchpad and its TUNE-hold service. it also works if you installed with the old manual instructions. NEMESIS stays installed. if you want that gone too, use **Wipe NEMESIS** in NEMESIS Manager. see the [NEMESIS docs](https://github.com/xwtk/hmg_nemesis/blob/main/03-Install-and-Uninstall.md#5-uninstall-wipe).
+
+## troubleshooting
+
+| what you see | what to do |
+| --- | --- |
+| nothing happens when you plug in the drive | make sure `NEMESIS.data` is in the **root** of the drive, not in a folder. check the drive is FAT32/exFAT and in a data port. check NEMESIS is installed (press NAV three times; Manager should open). |
+| "Invalid package descriptor" | the files were edited or copied incompletely. extract the zip again onto the drive. |
+| the dialog says it failed | open `launchpad-<install/update/uninstall>.log` on the drive. for more detail, open NEMESIS Manager → **Logs** → **Copy to USB**, which writes a `NEMESIS-logs` folder to the drive. |
+| "not enough space on /system" in the log | nothing was changed. message me with the log. |
+| holding TUNE doesn't open Launchpad | reboot once more. in NEMESIS Manager → **Services**, `paytondev.launchpad/knobd` should be running. a different headunit may need a different TUNE profile; message me. |
+| preconditioning says **Unavailable** | your firmware doesn't match the checked profile, so Launchpad won't send commands. see [COMPATIBILITY.md](COMPATIBILITY.md). |
+| it says **Waiting for BMS** forever | the car hasn't accepted the request. it can refuse because of temperature, charge, or other conditions. press **Stop** and try again later. |
+
+## what this changes on your car
+
+- the TUNE-hold service and a copy of the app live in `/data/nemesis/apps/paytondev.launchpad/`, like any other NEMESIS package. they show up in NEMESIS Manager → **Packages**.
+- the **only** file written under `/system` is **`/system/app/Launchpad.apk`**. that's how Android registers the app, because it can't be installed the normal way. no Hyundai files are changed.
+- before that write, the installer copies and checks everything in `/data/local/tmp` (cleared on reboot) and checks there's enough space. `/system` is made writable only for that one write and is set back to read-only right after. if the written file doesn't match, the previous version is put back.
+- uninstalling removes both.
+
+<details>
+<summary><b>advanced: manual install over ADB</b> (you don't need this for the USB install)</summary>
+
+these steps need ADB over Wi-Fi. in my testing, an iPhone hotspot is too modern for the car to connect to. you may have success with older devices or Android phones. you still need NEMESIS installed first (step 1 above).
+
+1. **Enable ADB and Wi-Fi on the car.**
 
    Download **Enable ADB.zip** and **Enable Wireless Features.zip** from [NEMESIS’s packages folder](https://github.com/xwtk/hmg_nemesis/tree/main/Packages).
 
@@ -34,9 +154,9 @@ right now, this process is fairly involved. eventually i'd like to make a single
 
    These packages enable network ADB and wireless features.
 
-4. **Open the hidden Wi-Fi settings.**
+2. **Open the hidden Wi-Fi settings.**
 
-   Enabling wireless features may not add a Wi-Fi button to Hyundai’s normal settings. You can open Android’s existing Wi-Fi screen with a small USB script.
+   Enabling wireless features may not add a Wi-Fi button to Hyundai’s normal settings. You can open Android’s existing Wi-Fi screen with a small USB script. If Launchpad is already installed, its **Advanced** screen has a Wi-Fi settings button instead.
 
    Back up the previous `NEMESIS.data` from your USB drive to your computer. Create these two plain-text files at the root of the drive, using the exact filenames below.
 
@@ -63,7 +183,7 @@ right now, this process is fairly involved. eventually i'd like to make a single
 
    Run the script again after connecting. It saves the current network addresses to `NEMESIS-network.txt` on the USB drive.
 
-5. **Install ADB on your computer.**
+3. **Install ADB on your computer.**
 
    Download [Android SDK Platform-Tools](https://developer.android.com/tools/releases/platform-tools) for your operating system and extract the ZIP. You do not need to install Android Studio.
 
@@ -81,7 +201,7 @@ right now, this process is fairly involved. eventually i'd like to make a single
 
    The remaining examples use `adb`. Substitute `./adb` on macOS/Linux or `.\adb.exe` in PowerShell unless you have already added Platform-Tools to your PATH.
 
-6. **Find the car’s IP address and connect.**
+4. **Find the car’s IP address and connect.**
 
    Check your router or hotspot’s connected-device list. Alternatively, read `NEMESIS-network.txt` from the USB drive and find the address of the connected Wi-Fi interface.
 
@@ -111,115 +231,45 @@ right now, this process is fairly involved. eventually i'd like to make a single
      ```
    - Keep in mind `adb pair CAR_IP:5555` will NOT work due to Hyundai not supporting pairing codes.
 
-7. **Install the TUNE-knob service.**
+5. **Install, update or uninstall the package.**
 
-   Download the **TUNE-knob service bundle** and **`Launchpad.apk`** from this repository’s [GitHub releases page](../../releases).
+   Download **`paytondev.launchpad.zip`** from the [releases page](../../releases). It's the same NEMESIS package the USB drives install, with the same `/system` rule. Don't extract it.
 
-   These are separate downloads:
-   - The service listens for a TUNE hold and opens Launchpad.
-   - `Launchpad.apk` contains the interface and preconditioning controls.
-
-   Extract the service’s USB installation bundle onto your USB drive. Its installation layout should look like this:
-   ```text
-   USB drive/
-   ├── NEMESIS.data
-   └── packages/
-       └── paytondev.launchpad.zip
+   ```sh
+   adb -s CAR_IP:5555 push "/path/to/paytondev.launchpad.zip" /data/local/tmp/paytondev.launchpad.zip
+   adb -s CAR_IP:5555 shell "nemesis install /data/local/tmp/paytondev.launchpad.zip"
    ```
 
-   Use the installation descriptor supplied with the bundle instead of the `NEMESIS.data` file we used before. Do not extract the inner `paytondev.launchpad.zip`.
-
-   Insert the drive and confirm installation. NEMESIS registers and starts the service. You can check it from your computer:
+   To update, use `nemesis install --update /data/local/tmp/paytondev.launchpad.zip` instead. To uninstall, run `nemesis uninstall paytondev.launchpad`. Then check:
    ```sh
+   adb -s CAR_IP:5555 shell "nemesis pkg-list"
    adb -s CAR_IP:5555 shell "nemesis service status paytondev.launchpad/knobd"
-   ```
-
-   The current listener is configured for the inspected NEEV23 US head unit. Different hardware may require a different input-device profile; let me know if something doesn't work.
-
-8. **Install `Launchpad.apk`.**
-
-   Keep the car parked with the head unit awake. Run each command separately and stop if anything fails.
-
-   The installation below adds our app at **`/system/app/Launchpad.apk`**. For an update, it replaces only that same file. Do not overwrite any Hyundai APK, NEMESIS file, or TUNE-service file.
-
-   First, check root access and available space:
-   ```sh
-   adb -s CAR_IP:5555 shell "nemesis root -c 'id'"
-   adb -s CAR_IP:5555 shell "df /system /data"
    adb -s CAR_IP:5555 shell "ls -l /system/app/Launchpad.apk"
    ```
 
-   “No such file” for `Launchpad.apk` is expected on a first installation. If it already exists, save a backup and its metadata in a new folder on your computer before continuing:
-   ```sh
-   adb -s CAR_IP:5555 pull /system/app/Launchpad.apk Launchpad-before.apk
-   adb -s CAR_IP:5555 shell "ls -l /system/app/Launchpad.apk" > Launchpad-before-metadata.txt
-   ```
+   `nemesis install` prints the install hook's output. NEMESIS's own log is at `/data/nemesis/nemesis.log`. Do not use `adb install`, and do not disable package-verification settings to work around an error.
 
-   Push the downloaded APK, substituting its actual local path:
-   ```sh
-   adb -s CAR_IP:5555 push "/path/to/Launchpad.apk" /data/local/tmp/Launchpad-install.upload
-   ```
+6. **Reboot and open Launchpad.**
 
-   Check the system mount:
-   ```sh
-   adb -s CAR_IP:5555 shell "cat /proc/mounts"
-   ```
-
-   The `/system` entry must be writable (`rw`) for installation. If it is read-only, use NEMESIS’s [documented remount command](https://github.com/xwtk/hmg_nemesis/blob/main/04-Packages.md):
-   ```sh
-   adb -s CAR_IP:5555 shell "nemesis remount rw"
-   ```
-
-   If that fails, stop. Do not try alternative mount flags or firmware changes.
-
-   Stage the APK with root ownership and the correct permissions:
-   ```sh
-   adb -s CAR_IP:5555 shell "nemesis root -c 'cat /data/local/tmp/Launchpad-install.upload > /system/app/Launchpad-install.new && chown 0:0 /system/app/Launchpad-install.new && chmod 0644 /system/app/Launchpad-install.new'"
-   adb -s CAR_IP:5555 pull /system/app/Launchpad-install.new Launchpad-staged.apk
-   ```
-
-   Now, move the staged file into its final location:
-   ```sh
-   adb -s CAR_IP:5555 shell "nemesis root -c 'mv /system/app/Launchpad-install.new /system/app/Launchpad.apk && sync'"
-   adb -s CAR_IP:5555 shell "ls -l /system/app/Launchpad.apk"
-   adb -s CAR_IP:5555 pull /system/app/Launchpad.apk Launchpad-installed.apk
-   ```
-
-   If you temporarily remounted `/system` writable, restore it:
-   ```sh
-   adb -s CAR_IP:5555 shell "nemesis remount ro"
-   ```
-
-   Do not use `adb install` for this installation route or disable package-verification settings to work around an error.
-
-9. **Reboot and open Launchpad.**
-
-   After verifying the installed APK, reboot:
    ```sh
    adb -s CAR_IP:5555 shell "nemesis root -c 'reboot'"
    ```
 
-   Wait for the head unit to finish starting, then hold TUNE for roughly one second. Launchpad should open.
-
-   If it does not, reconnect ADB and try opening the app directly:
+   Wait for the head unit to finish starting, then hold TUNE for roughly one second. If Launchpad doesn't open, try opening it directly:
    ```sh
    adb -s CAR_IP:5555 shell "am start -n com.paytondev.launchpad/.MainActivity"
    ```
 
-   If direct launch works, check the TUNE service:
+   If that works, check the TUNE service:
    ```sh
    adb -s CAR_IP:5555 shell "nemesis service status paytondev.launchpad/knobd"
    ```
 
-   Once installed, you do not need to insert the USB drive every time you open Launchpad. Its **Advanced** screen includes Wi-Fi settings and connection information.
+</details>
 
-10. **Check preconditioning while parked.**
+## building from source
 
-   Press **Start**. Launchpad will initially show that it is waiting for the BMS. Activation may take roughly **60–120 seconds**, and the BMS can refuse activation because of temperature, charge, or other operating conditions.
-
-   **Waiting does not mean the battery heater is active.** Launchpad shows **Active** only when the car reports conditioning active.
-
-   Press **Stop** to cancel, including while activation is pending. Closing Launchpad does not stop an ongoing request.
+see [BUILDING.md](BUILDING.md). releases are built with `tools/build_apk.sh` and `tools/build_usb_bundles.py`.
 
 ## credits
 - [https://github.com/xwtk/hmg_nemesis](https://github.com/xwtk/hmg_nemesis) - the NEMESIS exploit that made this all possible
